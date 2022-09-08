@@ -69,8 +69,8 @@ static int listar_procesos(struct seq_file *m, void *v) {
         Estado Estado en el que se encuentra el proceso
         %RAM Porcentaje de utilización de RAM por el proceso//se ejecuta cada proceso y se revisa su estado
         */
-        seq_printf(m, "\n{ \"PID\" : %d, \"Nombre\" : \"%s\", \"Estado\" : %ld , \"User\" : %i, \"Mem\"  : %ld,", procesos->pid, procesos->comm, procesos->__state, procesos->cred->uid.val, procesomem);
-        seq_printf(m, "\"subprocesos\" : [");
+        seq_printf(m, "\n{ \"Pid\" : %d, \"Nombre\" : \"%s\", \"Estado\" : %ld , \"User\" : %i, \"Mem\"  : %ld,", procesos->pid, procesos->comm, procesos->__state, procesos->cred->uid.val, procesomem);
+        seq_printf(m, "\"Subprocesos\" : [");
         cont = 0;
 
         list_for_each(listap, &(procesos->children)) {
@@ -81,7 +81,7 @@ static int listar_procesos(struct seq_file *m, void *v) {
             }
 
             subprocesos= list_entry(listap, struct task_struct, sibling);
-            seq_printf(m, "\n{ \"PID\" : %d, \"Nombre\" : \"%s\"}", subprocesos->pid, subprocesos->comm);
+            seq_printf(m, "\n{ \"Pid\" : %d, \"Nombre\" : \"%s\", \"Ppid\" : %d}", subprocesos->pid, subprocesos->comm, procesos->pid);
             if(subprocesos->__state == 0){
                 ejecucion++;
             }else if(subprocesos->__state == 1){
