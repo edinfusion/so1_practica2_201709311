@@ -1,0 +1,13 @@
+make all
+make clean
+sudo dmesg -C //limpia mensajes
+sudo insmod nombre.ko //para insertar modulo
+sudo dmesg  //muestra mensajes
+sudo rmmod nombre.ko //para eliminar modulo de proc
+sudo dmesg  //muestra mensajes
+
+
+
+//comandos terminal linux
+top
+free
