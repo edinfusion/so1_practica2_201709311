@@ -1,0 +1,1 @@
+cmd_/home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.mod := { echo  /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.o;  echo; } > /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.mod

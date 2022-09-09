@@ -1,0 +1,1 @@
+cmd_/home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.ko := ld -r -m elf_x86_64 --build-id=sha1  -T scripts/module.lds -o /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.ko /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.o /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/cpu_201709311.mod.o;  true

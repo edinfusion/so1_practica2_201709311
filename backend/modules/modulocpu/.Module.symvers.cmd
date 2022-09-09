@@ -1,0 +1,1 @@
+cmd_/home/edinmv/go/src/Practica_2/backend/modules/modulocpu/Module.symvers := sed 's/\.ko$$/\.o/' /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/modules.order | scripts/mod/modpost -m -a  -o /home/edinmv/go/src/Practica_2/backend/modules/modulocpu/Module.symvers -e -i Module.symvers   -T -

@@ -68,22 +68,46 @@ func getModuloCpu(w http.ResponseWriter, r *http.Request) {
 
 func createProceso(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json")
-	for i := 0; i < len(C.Procesos); i++ {
-		query := "INSERT INTO Subprocesos(Pid, Nombre, Ppid) VALUES (?,?,?)"
-		for j := 0; j < len(C.Procesos[i].Subprocesos); j++ {
-			_, err := conn.Exec(query, C.Procesos[i].Subprocesos[j].Pid, C.Procesos[i].Subprocesos[j].Nombre, C.Procesos[i].Subprocesos[j].Ppid)
-			if err != nil {
-				fmt.Println("HAY ERROR: \n", err)
-			}
-		}
-		query = "INSERT INTO Procesos(Pid, Nombre, Estado, User, Mem) VALUES (?,?,?,?,?)"
-		_, err := conn.Exec(query, C.Procesos[i].Pid, C.Procesos[i].Nombre, C.Procesos[i].Estado, C.Procesos[i].User, C.Procesos[i].Mem)
-		if err != nil {
-			fmt.Println("HAY ERROR: \n", err)
-		}
-
+	borrar := "DELETE FROM Procesos"
+	_, err := conn.Exec(borrar)
+	if err != nil {
+		fmt.Println("Error al borrar")
 	}
-	json.NewEncoder(response).Encode(C)
+	b, err := json.Marshal(C)
+	if err != nil {
+		fmt.Println("Error al convertir a json")
+	}
+	query := "INSERT INTO Procesos VALUES('" + string(b) + "');"
+	result, err := conn.Exec(query)
+	if err != nil {
+		fmt.Println("Error al insertar")
+	}
+
+	json.NewEncoder(response).Encode(result)
+}
+
+func getProcesos(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("content-type", "application/json")
+	var procesos []Cpu
+	query := "SELECT * FROM Procesos"
+	rows, err := conn.Query(query)
+	if err != nil {
+		fmt.Println("Error al consultar")
+	}
+	for rows.Next() {
+		var proceso Cpu
+		var b []byte
+		err = rows.Scan(&b)
+		if err != nil {
+			fmt.Println("Error al escanear")
+		}
+		err = json.Unmarshal(b, &proceso)
+		if err != nil {
+			fmt.Println("Error al convertir a json")
+		}
+		procesos = append(procesos, proceso)
+	}
+	json.NewEncoder(response).Encode(procesos)
 }
 
 func main() {
@@ -91,5 +115,6 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/cpu", getModuloCpu).Methods("GET")
 	router.HandleFunc("/cpuinsert", createProceso).Methods("POST")
+	router.HandleFunc("/cpuget", getProcesos).Methods("GET")
 	http.ListenAndServe(":8080", router)
 }
