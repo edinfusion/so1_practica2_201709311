@@ -11,3 +11,10 @@ sudo dmesg  //muestra mensajes
 //comandos terminal linux
 top
 free
+
+
+//rutas backend
+post:
+http://localhost:8080/cpuinsert
+http://localhost:8080/raminsert
+http://localhost:8080/usocpuinsert
