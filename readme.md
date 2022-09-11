@@ -96,6 +96,6 @@ En el cuerpo de este archivo se inscriben un nombre para el modulo y dos comando
 
    ​					**sudo rmmod <nombredearchivo>.ko**
 
-
+------
 
 ​                                                                                                  Edin Montenegro - Estudiante de Ingeniería en Ciencias y Sistemas. Curso Sistema Operativos 1.
