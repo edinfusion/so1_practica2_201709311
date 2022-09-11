@@ -98,6 +98,4 @@ En el cuerpo de este archivo se inscriben un nombre para el modulo y dos comando
 
 
 
-------
-
-​                                                                                                                       Edin Montenegro - Estudiante Ingeniería en Sistema. Curso Sistema Operativos 1.
+​                                                                                                  Edin Montenegro - Estudiante de Ingeniería en Ciencias y Sistemas. Curso Sistema Operativos 1.
