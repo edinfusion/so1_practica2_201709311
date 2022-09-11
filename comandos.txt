@@ -13,8 +13,13 @@ top
 free
 
 
-//rutas backend
-post:
+//rutas backend golang
+get:
 http://localhost:8080/cpuinsert
+http://localhost:8080/estadosinsert
 http://localhost:8080/raminsert
 http://localhost:8080/usocpuinsert
+//rutas server frontend
+http://localhost:5000/prueba
+http://localhost:5000/cpu
+http://localhost:5000/ram
