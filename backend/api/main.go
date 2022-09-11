@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	"github.com/mackerelio/go-osstat/cpu"
 )
 
@@ -34,8 +32,16 @@ func MySQLConnection() *sql.DB {
 	return conn
 }
 
-//struct para cpu
-type Cpu struct {
+type EstadosI struct {
+	Estados []struct {
+		Ejecucion  int `json:"Ejecucion"`
+		Suspendido int `json:"Suspendido"`
+		Detenido   int `json:"Detenido"`
+		Zombie     int `json:"Zombie"`
+	} `json:"Estados"`
+}
+
+type ProcesosI struct {
 	Procesos []struct {
 		Pid         int    `json:"Pid"`
 		Nombre      string `json:"Nombre"`
@@ -48,12 +54,6 @@ type Cpu struct {
 			Ppid   int    `json:"Ppid"`
 		} `json:"Subprocesos"`
 	} `json:"Procesos"`
-	Estados []struct {
-		Ejecucion  int `json:"Ejecucion"`
-		Suspendido int `json:"Suspendido"`
-		Detenido   int `json:"Detenido"`
-		Zombie     int `json:"Zombie"`
-	} `json:"Estados"`
 }
 
 type Ram struct {
@@ -64,16 +64,29 @@ type Cpuso struct {
 	Porcentaje string `json:"Porcentaje"`
 }
 
-var C Cpu
+//var C Cpu
 var R Ram
 var B Cpuso
+var E EstadosI
+var P ProcesosI
 
 func getModuloCpu() {
 	data, err := ioutil.ReadFile(Modulocpu)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = json.Unmarshal(data, &C)
+	err = json.Unmarshal(data, &P)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func getEstados() {
+	data, err := ioutil.ReadFile(Modulocpu)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = json.Unmarshal(data, &E)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -110,29 +123,45 @@ func cpuUsage() {
 	B.Porcentaje = a
 }
 
-func createProceso(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("content-type", "application/json")
+func createProcesos() {
 	getModuloCpu()
 	borrar := "DELETE FROM Procesos"
 	_, err := conn.Exec(borrar)
 	if err != nil {
 		fmt.Println("Error al borrar")
 	}
-	b, err := json.Marshal(C)
+	b, err := json.Marshal(P)
 	if err != nil {
 		fmt.Println("Error al convertir a json")
 	}
 	query := "INSERT INTO Procesos VALUES('" + string(b) + "');"
-	result, err := conn.Exec(query)
-	if err != nil {
+	_, err1 := conn.Exec(query)
+	if err1 != nil {
 		fmt.Println("Error al insertar")
 	}
-
-	json.NewEncoder(response).Encode(result)
+	fmt.Println("Procesos agregados")
 }
 
-func createRam(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("content-type", "application/json")
+func createEstados() {
+	getEstados()
+	borrar := "DELETE FROM Estados"
+	_, err := conn.Exec(borrar)
+	if err != nil {
+		fmt.Println("Error al borrar")
+	}
+	b, err := json.Marshal(E)
+	if err != nil {
+		fmt.Println("Error al convertir a json")
+	}
+	query := "INSERT INTO Estados VALUES('" + string(b) + "');"
+	_, err1 := conn.Exec(query)
+	if err1 != nil {
+		fmt.Println("Error al insertar")
+	}
+	fmt.Println("Estados actualizados")
+}
+
+func createRam() {
 	getModuloRam()
 	borrar := "DELETE FROM Ram"
 	_, err := conn.Exec(borrar)
@@ -144,16 +173,14 @@ func createRam(response http.ResponseWriter, request *http.Request) {
 		fmt.Println("Error al convertir a json")
 	}
 	query := "INSERT INTO Ram VALUES('" + string(b) + "');"
-	result, err := conn.Exec(query)
-	if err != nil {
+	_, err1 := conn.Exec(query)
+	if err1 != nil {
 		fmt.Println("Error al insertar")
 	}
-
-	json.NewEncoder(response).Encode(result)
+	fmt.Println("Ram actualizada")
 }
 
-func createUsoCpu(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("content-type", "application/json")
+func createUsoCpu() {
 	cpuUsage()
 	borrar := "DELETE FROM Cpu"
 	_, err := conn.Exec(borrar)
@@ -165,69 +192,129 @@ func createUsoCpu(response http.ResponseWriter, request *http.Request) {
 		fmt.Println("Error al convertir a json")
 	}
 	query := "INSERT INTO Cpu VALUES('" + string(b) + "');"
-	result, err := conn.Exec(query)
-	if err != nil {
+	_, err1 := conn.Exec(query)
+	if err1 != nil {
 		fmt.Println("Error al insertar")
 	}
-
-	json.NewEncoder(response).Encode(result)
-}
-
-func getProcesos(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("content-type", "application/json")
-	var procesos []Cpu
-	query := "SELECT * FROM Procesos"
-	rows, err := conn.Query(query)
-	if err != nil {
-		fmt.Println("Error al consultar")
-	}
-	for rows.Next() {
-		var proceso Cpu
-		var b []byte
-		err = rows.Scan(&b)
-		if err != nil {
-			fmt.Println("Error al escanear")
-		}
-		err = json.Unmarshal(b, &proceso)
-		if err != nil {
-			fmt.Println("Error al convertir a json")
-		}
-		procesos = append(procesos, proceso)
-	}
-	json.NewEncoder(response).Encode(procesos)
-}
-
-func getRam(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("content-type", "application/json")
-	var rams []Ram
-	query := "SELECT * FROM Ram"
-	rows, err := conn.Query(query)
-	if err != nil {
-		fmt.Println("Error al consultar")
-	}
-	for rows.Next() {
-		var ram Ram
-		var b []byte
-		err = rows.Scan(&b)
-		if err != nil {
-			fmt.Println("Error al escanear")
-		}
-		err = json.Unmarshal(b, &ram)
-		if err != nil {
-			fmt.Println("Error al convertir a json")
-		}
-		rams = append(rams, ram)
-	}
-	json.NewEncoder(response).Encode(rams)
+	fmt.Println("Cpu actualizado")
 }
 
 func main() {
-	cpuUsage()
-	fmt.Println("Servidor corriendo en el puerto 8080")
-	router := mux.NewRouter()
-	router.HandleFunc("/cpuinsert", createProceso).Methods("POST")
-	router.HandleFunc("/raminsert", createRam).Methods("POST")
-	router.HandleFunc("/usocpuinsert", createUsoCpu).Methods("POST")
-	router.HandleFunc("/cpuget", getProcesos).Methods("GET")
-	http.ListenAndServe(":8080", router)
+	fmt.Println("SERVIDOR GO INSERTANDO MODULOS EN MYSQL GCP")
+	escuchar := true
+	createProcesos()
+	for escuchar {
+		fmt.Println("Escuchando Modulos...")
+		createEstados()
+		time.Sleep(time.Duration(2000) * time.Millisecond)
+		createRam()
+		time.Sleep(time.Duration(2000) * time.Millisecond)
+		createUsoCpu()
+		time.Sleep(time.Duration(2000) * time.Millisecond)
+	}
 }
+
+////struct para cpu
+//type Cpu struct {
+//	Procesos []struct {
+//		Pid         int    `json:"Pid"`
+//		Nombre      string `json:"Nombre"`
+//		Estado      int    `json:"Estado"`
+//		User        int    `json:"User"`
+//		Mem         int    `json:"Mem"`
+//		Subprocesos []struct {
+//			Pid    int    `json:"Pid"`
+//			Nombre string `json:"Nombre"`
+//			Ppid   int    `json:"Ppid"`
+//		} `json:"Subprocesos"`
+//	} `json:"Procesos"`
+//	Estados []struct {
+//		Ejecucion  int `json:"Ejecucion"`
+//		Suspendido int `json:"Suspendido"`
+//		Detenido   int `json:"Detenido"`
+//		Zombie     int `json:"Zombie"`
+//	} `json:"Estados"`
+//}
+
+//func createProcesos(response http.ResponseWriter, request *http.Request) {
+//	response.Header().Add("content-type", "application/json")
+//	getModuloCpu()
+//	borrar := "DELETE FROM Procesos"
+//	_, err := conn.Exec(borrar)
+//	if err != nil {
+//		fmt.Println("Error al borrar")
+//	}
+//	b, err := json.Marshal(P)
+//	if err != nil {
+//		fmt.Println("Error al convertir a json")
+//	}
+//	query := "INSERT INTO Procesos VALUES('" + string(b) + "');"
+//	result, err := conn.Exec(query)
+//	if err != nil {
+//		fmt.Println("Error al insertar")
+//	}
+//	json.NewEncoder(response).Encode(result)
+//	fmt.Println("Se inserto correctamente")
+//}
+
+//func createEstados(response http.ResponseWriter, request *http.Request) {
+//	response.Header().Add("content-type", "application/json")
+//	getEstados()
+//	borrar := "DELETE FROM Estados"
+//	_, err := conn.Exec(borrar)
+//	if err != nil {
+//		fmt.Println("Error al borrar")
+//	}
+//	b, err := json.Marshal(E)
+//	if err != nil {
+//		fmt.Println("Error al convertir a json")
+//	}
+//	query := "INSERT INTO Estados VALUES('" + string(b) + "');"
+//	result, err := conn.Exec(query)
+//	if err != nil {
+//		fmt.Println("Error al insertar")
+//	}
+//	json.NewEncoder(response).Encode(result)
+//}
+
+//func createRam(response http.ResponseWriter, request *http.Request) {
+//	response.Header().Add("content-type", "application/json")
+//	getModuloRam()
+//	borrar := "DELETE FROM Ram"
+//	_, err := conn.Exec(borrar)
+//	if err != nil {
+//		fmt.Println("Error al borrar")
+//	}
+//	b, err := json.Marshal(R)
+//	if err != nil {
+//		fmt.Println("Error al convertir a json")
+//	}
+//	query := "INSERT INTO Ram VALUES('" + string(b) + "');"
+//	result, err := conn.Exec(query)
+//	if err != nil {
+//		fmt.Println("Error al insertar")
+//	}
+//
+//	json.NewEncoder(response).Encode(result)
+//}
+
+//func createUsoCpu(response http.ResponseWriter, request *http.Request) {
+//	response.Header().Add("content-type", "application/json")
+//	cpuUsage()
+//	borrar := "DELETE FROM Cpu"
+//	_, err := conn.Exec(borrar)
+//	if err != nil {
+//		fmt.Println("Error al borrar")
+//	}
+//	b, err := json.Marshal(B)
+//	if err != nil {
+//		fmt.Println("Error al convertir a json")
+//	}
+//	query := "INSERT INTO Cpu VALUES('" + string(b) + "');"
+//	result, err := conn.Exec(query)
+//	if err != nil {
+//		fmt.Println("Error al insertar")
+//	}
+//
+//	json.NewEncoder(response).Encode(result)
+//}

@@ -1,6 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.css';
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/js/src/collapse.js";
 import Collapsible from 'react-collapsible';
 import Subproceso from './Subproceso';
 const Proceso = ({ iproceso, sbproceso }) => {
