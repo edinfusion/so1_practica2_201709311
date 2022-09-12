@@ -4,7 +4,7 @@
 
    make all 
 
-   sudo insmod <nombremodulo>.ko
+   sudo insmod nombremodulo.ko
 
    esto se hace para el modulo del cpu y ram (en sus respectivas carpetas)
 
