@@ -26,4 +26,4 @@
 
 3. Si todo salió bien se debe osbservar por terminal:
 
-   ![imagenserveronline](backend/images/servergo.png)
+   ![imagenserveronline](images/servergo.png)
