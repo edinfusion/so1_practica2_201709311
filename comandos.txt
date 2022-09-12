@@ -23,3 +23,17 @@ http://localhost:8080/usocpuinsert
 http://localhost:5000/prueba
 http://localhost:5000/cpu
 http://localhost:5000/ram
+
+//backend
+docker pull edinmv/backend_go_p2  (para descargar imagen)
+docker images (validar que ya esta descargada, se debe observar el nombre de la imagen)
+docker run -it -p 8080:8080 idcontenedor (para levantar contenedor y correr la app)
+
+
+//server y frontend
+docker pull edinmv/server_p2_201709311   (para descargar imagen)
+docker pull edinmv/frontend_p2_201709311  (para descargar imagen)
+
+buscar el archivo docker compose y ejecutar
+docker-compose up 
+

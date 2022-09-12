@@ -119,7 +119,7 @@ func cpuUsage() {
 	//fmt.Printf("cpu idle: %f %%\n", float64(after.Idle-before.Idle)/total*100)
 	uso := 100 - (float64(after.Idle-before.Idle) / total * 100)
 	a := strconv.FormatFloat(uso, 'f', 2, 64)
-	fmt.Println(a)
+	//fmt.Println(a)
 	B.Porcentaje = a
 }
 
@@ -139,7 +139,7 @@ func createProcesos() {
 	if err1 != nil {
 		fmt.Println("Error al insertar")
 	}
-	fmt.Println("Procesos agregados")
+	fmt.Println("Procesos actualizados")
 }
 
 func createEstados() {
@@ -210,6 +210,8 @@ func main() {
 		createRam()
 		time.Sleep(time.Duration(2000) * time.Millisecond)
 		createUsoCpu()
+		time.Sleep(time.Duration(2000) * time.Millisecond)
+		createProcesos()
 		time.Sleep(time.Duration(2000) * time.Millisecond)
 	}
 }

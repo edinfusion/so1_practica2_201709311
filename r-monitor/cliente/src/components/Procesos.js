@@ -73,6 +73,10 @@ export default class Procesos extends React.Component {
                 var url = '/ram';
                 const res3 = await axios.get(url);
                 this.setState({ ram: res3.data });
+                await sleep(2000);
+                var url = '/prueba';
+                const res4 = await axios.get(url);
+                this.setState({ procesos: res4.data.Procesos });
             }
         }
         catch (error) {
